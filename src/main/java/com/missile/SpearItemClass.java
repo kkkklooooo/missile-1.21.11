@@ -6,35 +6,58 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageTypes;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ToolMaterial;
 import net.minecraft.registry.entry.LazyRegistryEntryReference;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
 import net.minecraft.util.SwingAnimationType;
+import net.minecraft.world.World;
 
 import java.util.Optional;
 
-import static net.minecraft.item.Items.register;
-
-public class CustomSpearItem extends Item {
-
-    public static final Item WOODEN_THROWABLE_SPEAR = register("tob",new Settings().spear(
-            ToolMaterial.GOLD,
-            0.65F, 0.7F, 0.75F, 5.0F, 14.0F, 6.0F, 5.1F, 15.0F, 4.6F
-    ));
-
-
-    public static void Init(){
-        Missile.LOGGER.info("REG");
+public class SpearItemClass extends Item {
+    public SpearItemClass(ToolMaterial material,
+                          float swingAnimationSeconds,
+                          float chargeDamageMultiplier,
+                          float chargeDelaySeconds,
+                          float maxDurationForDismountSeconds,
+                          float minSpeedForDismount,
+                          float maxDurationForChargeKnockbackInSeconds,
+                          float minSpeedForChargeKnockback,
+                          float maxDurationForChargeDamageInSeconds,
+                          float minRelativeSpeedForChargeDamage,
+                          Item.Settings s) {
+        super(spear(s,material,swingAnimationSeconds,chargeDamageMultiplier,chargeDelaySeconds,maxDurationForDismountSeconds,minSpeedForDismount,maxDurationForChargeKnockbackInSeconds,
+                minSpeedForChargeKnockback,maxDurationForChargeDamageInSeconds,minRelativeSpeedForChargeDamage));
     }
 
-    public CustomSpearItem(Settings settings) {
-        super(settings);
+    @Override
+    public ActionResult use(World world, PlayerEntity user, Hand hand) {
+
+
+
+
+        return super.use(world, user, hand);
     }
 
-    // 可选：重写其他方法来自定义行为
-    public static Item.Settings spear(
+    @Override
+    public void usageTick(World world, LivingEntity user, ItemStack stack, int remainingUseTicks) {
+
+        Missile.LOGGER.info("USE!");
+        user.addVelocity(user.getRotationVector().normalize());
+        super.usageTick(world, user, stack, remainingUseTicks);
+    }
+
+    @Override
+    public void postHit(ItemStack stack, LivingEntity target, LivingEntity attacker) {
+        Missile.LOGGER.info("Hit!!!!");
+    }
+
+    public static Item.Settings spear(Item.Settings s,
             ToolMaterial material,
             float swingAnimationSeconds,
             float chargeDamageMultiplier,
@@ -46,7 +69,8 @@ public class CustomSpearItem extends Item {
             float maxDurationForChargeDamageInSeconds,
             float minRelativeSpeedForChargeDamage
     ) {
-        return new Settings().maxDamage(material.durability())
+
+        return s.maxDamage(material.durability())
                 .repairable(material.repairItems())
                 .enchantable(material.enchantmentValue())
                 .component(DataComponentTypes.DAMAGE_TYPE, new LazyRegistryEntryReference<>(DamageTypes.SPEAR))
@@ -67,18 +91,18 @@ public class CustomSpearItem extends Item {
                                 Optional.of(material == ToolMaterial.WOOD ? SoundEvents.ITEM_SPEAR_WOOD_HIT : SoundEvents.ITEM_SPEAR_HIT)
                         )
                 )
-                .component(
-                        DataComponentTypes.PIERCING_WEAPON,
-                        new PiercingWeaponComponent(
-                                2.0F,
-                                4.5F,
-                                0.25F,
-                                true,
-                                false,
-                                Optional.of(material == ToolMaterial.WOOD ? SoundEvents.ITEM_SPEAR_WOOD_ATTACK : SoundEvents.ITEM_SPEAR_ATTACK),
-                                Optional.of(material == ToolMaterial.WOOD ? SoundEvents.ITEM_SPEAR_WOOD_HIT : SoundEvents.ITEM_SPEAR_HIT)
-                        )
-                )
+//                .component(
+//                        DataComponentTypes.PIERCING_WEAPON,
+//                        new PiercingWeaponComponent(
+//                                2.0F,
+//                                4.5F,
+//                                0.25F,
+//                                true,
+//                                false,
+//                                Optional.of(material == ToolMaterial.WOOD ? SoundEvents.ITEM_SPEAR_WOOD_ATTACK : SoundEvents.ITEM_SPEAR_ATTACK),
+//                                Optional.of(material == ToolMaterial.WOOD ? SoundEvents.ITEM_SPEAR_WOOD_HIT : SoundEvents.ITEM_SPEAR_HIT)
+//                        )
+//                )
                 .component(DataComponentTypes.MINIMUM_ATTACK_CHARGE, 1.0F)
                 .component(DataComponentTypes.SWING_ANIMATION, new SwingAnimationComponent(SwingAnimationType.STAB, (int)(swingAnimationSeconds * 20.0F)))
                 .attributeModifiers(
