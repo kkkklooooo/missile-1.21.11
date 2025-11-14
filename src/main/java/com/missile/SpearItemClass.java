@@ -22,6 +22,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.SwingAnimationType;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Position;
+import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 
 import java.util.Optional;
@@ -142,7 +143,12 @@ public class SpearItemClass extends Item implements ProjectileItem {
         Missile.LOGGER.info("STOP");
         if (world instanceof ServerWorld serverWorld) {
             ItemStack itemStack = stack.splitUnlessCreative(1, user);
-            TridentEntity tridentEntity = ProjectileEntity.spawnWithVelocity(TridentEntity::new, serverWorld, itemStack, user, 0.0F, 2.5F, 1.0F);
+            Random r = Random.create();
+            for (int i=0;i<3000;i++){
+
+                TridentEntity tridentEntity = ProjectileEntity.spawnWithVelocity(TridentEntity::new, serverWorld, itemStack, user,r.nextFloat() , 2.5F, 100F);
+            }
+
         }
         return super.onStoppedUsing(stack, world, user, remainingUseTicks);
     }
