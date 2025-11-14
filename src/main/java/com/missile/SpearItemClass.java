@@ -7,19 +7,26 @@ import net.minecraft.entity.attribute.EntityAttributeModifier;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
+import net.minecraft.entity.projectile.TridentEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ProjectileItem;
 import net.minecraft.item.ToolMaterial;
 import net.minecraft.registry.entry.LazyRegistryEntryReference;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.SwingAnimationType;
+import net.minecraft.util.math.Direction;
+import net.minecraft.util.math.Position;
 import net.minecraft.world.World;
 
 import java.util.Optional;
 
-public class SpearItemClass extends Item {
+public class SpearItemClass extends Item implements ProjectileItem {
     public SpearItemClass(ToolMaterial material,
                           float swingAnimationSeconds,
                           float chargeDamageMultiplier,
@@ -48,7 +55,7 @@ public class SpearItemClass extends Item {
     public void usageTick(World world, LivingEntity user, ItemStack stack, int remainingUseTicks) {
 
         Missile.LOGGER.info("USE!");
-        user.addVelocity(user.getRotationVector().normalize());
+        //user.addVelocity(user.getRotationVector().normalize());
         super.usageTick(world, user, stack, remainingUseTicks);
     }
 
@@ -121,5 +128,28 @@ public class SpearItemClass extends Item {
                 )
                 .component(DataComponentTypes.USE_EFFECTS, new UseEffectsComponent(true, false, 1.0F))
                 .component(DataComponentTypes.WEAPON, new WeaponComponent(1));
+    }
+
+    @Override
+    public ProjectileEntity createEntity(World world, Position pos, ItemStack stack, Direction direction) {
+        TridentEntity tridentEntity = new TridentEntity(world, pos.getX(), pos.getY(), pos.getZ(), stack.copyWithCount(1));
+        tridentEntity.pickupType = PersistentProjectileEntity.PickupPermission.ALLOWED;
+        return tridentEntity;
+    }
+
+    @Override
+    public boolean onStoppedUsing(ItemStack stack, World world, LivingEntity user, int remainingUseTicks) {
+        Missile.LOGGER.info("STOP");
+        if (world instanceof ServerWorld serverWorld) {
+            ItemStack itemStack = stack.splitUnlessCreative(1, user);
+            TridentEntity tridentEntity = ProjectileEntity.spawnWithVelocity(TridentEntity::new, serverWorld, itemStack, user, 0.0F, 2.5F, 1.0F);
+        }
+        return super.onStoppedUsing(stack, world, user, remainingUseTicks);
+    }
+
+    @Override
+    public ItemStack finishUsing(ItemStack stack, World world, LivingEntity user) {
+        Missile.LOGGER.info("Finish");
+        return super.finishUsing(stack, world, user);
     }
 }
