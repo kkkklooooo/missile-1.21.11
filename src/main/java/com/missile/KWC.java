@@ -113,7 +113,7 @@ public record KWC(
         if (true) {
             //i -= this.delayTicks;
             Vec3d vec3d = user.getRotationVector();
-            double d = vec3d.dotProduct(getAmplifiedMovement(bullet));
+            double d = vec3d.dotProduct(bullet.getVelocity());
             float f = user instanceof PlayerEntity ? 1.0F : 0.2F;
             float g = user instanceof PlayerEntity ? 1.0F : 0.5F;
             double e = user.getAttributeBaseValue(EntityAttributes.ATTACK_DAMAGE);
@@ -124,13 +124,14 @@ public record KWC(
                 boolean bl2 = user.isInPiercingCooldown(entity, this.contactCooldownTicks);
                 user.startPiercingCooldown(entity);
                 if (!bl2) {
-                    double h = vec3d.dotProduct(getAmplifiedMovement(entity));
+                    double h = vec3d.dotProduct(entity.getVelocity());
                     double j = Math.max(0.0, d - h);
 //                    boolean bl3 = this.dismountConditions.isPresent() && ((net.minecraft.component.type.KineticWeaponComponent.Condition)this.dismountConditions.get()).isSatisfied(i, d, j, f);
 //                    boolean bl4 = this.knockbackConditions.isPresent() && ((net.minecraft.component.type.KineticWeaponComponent.Condition)this.knockbackConditions.get()).isSatisfied(i, d, j, f);
 //                    boolean bl5 = this.damageConditions.isPresent() && ((net.minecraft.component.type.KineticWeaponComponent.Condition)this.damageConditions.get()).isSatisfied(i, d, j, f);
                     if (true) {
                         float k = (float)e + MathHelper.floor(j * this.damageMultiplier);
+                        Missile.LOGGER.info("Damage:%f".formatted(k));
                         bl |= user.pierce(slot, entity, k, true , true, true);
                     }
                 }

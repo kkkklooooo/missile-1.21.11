@@ -55,7 +55,7 @@ public class SpearItemClass extends Item implements ProjectileItem {
     @Override
     public void usageTick(World world, LivingEntity user, ItemStack stack, int remainingUseTicks) {
 
-        Missile.LOGGER.info("USE!");
+        Missile.LOGGER.info("USE!::%d".formatted(72000-remainingUseTicks));
         //user.addVelocity(user.getRotationVector().normalize());
         super.usageTick(world, user, stack, remainingUseTicks);
     }
@@ -129,6 +129,7 @@ public class SpearItemClass extends Item implements ProjectileItem {
                 )
                 .component(DataComponentTypes.USE_EFFECTS, new UseEffectsComponent(true, false, 1.0F))
                 .component(DataComponentTypes.WEAPON, new WeaponComponent(1));
+
     }
 
     @Override
@@ -138,18 +139,54 @@ public class SpearItemClass extends Item implements ProjectileItem {
         return tridentEntity;
     }
 
+//    @Override
+//    public boolean onStoppedUsing(ItemStack stack, World world, LivingEntity user, int remainingUseTicks) {
+//        float power= (float) (72000 - remainingUseTicks) /2;
+//        user.addVelocity(user.getRotationVector().normalize().multiply(-power/10));
+//        Missile.LOGGER.info("STOP");
+//        if (world instanceof ServerWorld serverWorld) {
+//            ItemStack itemStack = stack.splitUnlessCreative(1, user);
+//            Random r = Random.create();
+//            for (int i=0;i<1;i++){
+//
+//
+//                Missile.LOGGER.info("Power:%f".formatted(power));
+//                SpearEntity SpearEntity = ProjectileEntity.spawnWithVelocity(SpearEntity::new, serverWorld, itemStack, user,r.nextFloat() , power, 1f);
+//            }
+//
+//        }
+//        return super.onStoppedUsing(stack, world, user, remainingUseTicks);
+//    }
+    //动量守恒版本
     @Override
     public boolean onStoppedUsing(ItemStack stack, World world, LivingEntity user, int remainingUseTicks) {
-        user.addVelocity(user.getRotationVector().normalize().multiply(-2));
+        float bulletSpeed = (float) (72000 - remainingUseTicks) / 2;
+
+        // 定义质量（可以根据需要调整这些值）
+        float playerMass = 20.0f; // 玩家质量（kg）
+        float bulletMass = 5.0f;  // 子弹质量（kg）
+//        float playerMass = 5.0f; // 玩家质量（kg）
+//        float bulletMass = 70.0f;  // 子弹质量（kg）
+
+        // 计算玩家后坐力速度（动量守恒：m1*v1 = m2*v2）
+        float playerRecoilSpeed = (bulletMass * bulletSpeed) / playerMass;
+
+        // 给玩家施加后坐力（方向与发射方向相反）
+        user.addVelocity(user.getRotationVector().normalize().multiply(-playerRecoilSpeed / 10));
+
         Missile.LOGGER.info("STOP");
         if (world instanceof ServerWorld serverWorld) {
             ItemStack itemStack = stack.splitUnlessCreative(1, user);
             Random r = Random.create();
-            for (int i=0;i<1;i++){
+            for (int i = 0; i < 1; i++) {
+                Missile.LOGGER.info("Bullet Speed: %f, Player Recoil: %f".formatted(bulletSpeed, playerRecoilSpeed));
 
-                SpearEntity SpearEntity = ProjectileEntity.spawnWithVelocity(SpearEntity::new, serverWorld, itemStack, user,r.nextFloat() , 5F, 10f);
+                // 使用计算出的子弹速度发射
+                SpearEntity spearEntity = ProjectileEntity.spawnWithVelocity(
+                        SpearEntity::new, serverWorld, itemStack, user,
+                        r.nextFloat(), bulletSpeed, 1f
+                );
             }
-
         }
         return super.onStoppedUsing(stack, world, user, remainingUseTicks);
     }
