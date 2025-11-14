@@ -2,25 +2,28 @@ package com.missile;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+
+import net.minecraft.component.type.KineticWeaponComponent;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ProjectileDeflection;
+import net.minecraft.entity.*;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.data.DataTracker;
 import net.minecraft.entity.data.TrackedData;
 import net.minecraft.entity.data.TrackedDataHandlerRegistry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.entity.projectile.TridentEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import net.minecraft.item.ToolMaterial;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.storage.ReadView;
 import net.minecraft.storage.WriteView;
+import net.minecraft.text.StyleSpriteSource;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.MathHelper;
@@ -33,6 +36,17 @@ public class SpearEntity extends PersistentProjectileEntity {
     private static final TrackedData<Boolean> ENCHANTED = DataTracker.registerData(SpearEntity.class, TrackedDataHandlerRegistry.BOOLEAN);
     private static final float DRAG_IN_WATER = 0.99F;
     private static final boolean DEFAULT_DEALT_DAMAGE = false;
+    private static boolean HITTTTT = false;
+    private static EntityHitResult EHT = null;
+    private KWC KWC = new KWC(0,0,1,1,0,
+            KineticWeaponComponent.Condition.ofMinSpeed((int)(0 * 20.0F), 0),
+            KineticWeaponComponent.Condition.ofMinSpeed((int)(0 * 20.0F), 0),
+            KineticWeaponComponent.Condition.ofMinRelativeSpeed((int)(0 * 20.0F), 0),
+            0.38F,
+            10,
+            Optional.of(false? SoundEvents.ITEM_SPEAR_WOOD_USE : SoundEvents.ITEM_SPEAR_USE),
+            Optional.of(false ? SoundEvents.ITEM_SPEAR_WOOD_HIT : SoundEvents.ITEM_SPEAR_HIT)
+    );
     private boolean dealtDamage = false;
     public int returnTimer;
 
@@ -41,16 +55,19 @@ public class SpearEntity extends PersistentProjectileEntity {
     }
 
     public SpearEntity(World world, LivingEntity owner, ItemStack stack) {
-        super(EntityType.TRIDENT, owner, world, stack, null);
+        super(EntityType.ARROW, owner, world, stack, null);
         this.dataTracker.set(LOYALTY, this.getLoyalty(stack));
         this.dataTracker.set(ENCHANTED, stack.hasGlint());
     }
 
     public SpearEntity(World world, double x, double y, double z, ItemStack stack) {
-        super(EntityType.TRIDENT, x, y, z, world, stack, stack);
+        super(Missile.s, x, y, z, world, stack, stack);
         this.dataTracker.set(LOYALTY, this.getLoyalty(stack));
         this.dataTracker.set(ENCHANTED, stack.hasGlint());
     }
+
+
+
 
     @Override
     protected void initDataTracker(DataTracker.Builder builder) {
@@ -65,7 +82,12 @@ public class SpearEntity extends PersistentProjectileEntity {
             this.dealtDamage = true;
         }
 
+
         Entity entity = this.getOwner();
+        if(entity instanceof PlayerEntity&&!(this.isInGround()||this.isInGround()||this.inGroundTime>4)){
+            KWC.usageTick((PlayerEntity)entity,EquipmentSlot.MAINHAND,this,this.HITTTTT,this.EHT);
+        }
+
         int i = this.dataTracker.get(LOYALTY);
         if (i > 0 && (this.dealtDamage || this.isNoClip()) && entity != null) {
             if (!this.isOwnerAlive()) {
@@ -119,33 +141,36 @@ public class SpearEntity extends PersistentProjectileEntity {
 
     @Override
     protected void onEntityHit(EntityHitResult entityHitResult) {
-        Entity entity = entityHitResult.getEntity();
-        float f = 8.0F;
-        Entity entity2 = this.getOwner();
-        DamageSource damageSource = this.getDamageSources().trident(this, (Entity)(entity2 == null ? this : entity2));
-        if (this.getEntityWorld() instanceof ServerWorld serverWorld) {
-            f = EnchantmentHelper.getDamage(serverWorld, this.getWeaponStack(), entity, damageSource, f);
-        }
-
-        this.dealtDamage = true;
-        if (entity.sidedDamage(damageSource, f)) {
-            if (entity.getType() == EntityType.ENDERMAN) {
-                return;
-            }
-
-            if (this.getEntityWorld() instanceof ServerWorld serverWorld) {
-                EnchantmentHelper.onTargetDamaged(serverWorld, entity, damageSource, this.getWeaponStack(), item -> this.kill(serverWorld));
-            }
-
-            if (entity instanceof LivingEntity livingEntity) {
-                this.knockback(livingEntity, damageSource);
-                this.onHit(livingEntity);
-            }
-        }
-
-        this.deflect(ProjectileDeflection.SIMPLE, entity, this.owner, false);
-        this.setVelocity(this.getVelocity().multiply(0.02, 0.2, 0.02));
-        this.playSound(SoundEvents.ITEM_TRIDENT_HIT, 1.0F, 1.0F);
+         this.HITTTTT=true;
+         this.EHT =entityHitResult;
+//        Entity entity = entityHitResult.getEntity();
+//        entity.getEntityWorld().sendEntityStatus(entity, EntityStatuses.KINETIC_ATTACK);
+//        float f = 8.0F;
+//        Entity entity2 = this.getOwner();
+//        DamageSource damageSource = this.getDamageSources().trident(this, (Entity)(entity2 == null ? this : entity2));
+//        if (this.getEntityWorld() instanceof ServerWorld serverWorld) {
+//            f = EnchantmentHelper.getDamage(serverWorld, this.getWeaponStack(), entity, damageSource, f);
+//        }
+//
+//        this.dealtDamage = true;
+//        if (entity.sidedDamage(damageSource, f)) {
+//            if (entity.getType() == EntityType.ENDERMAN) {
+//                return;
+//            }
+//
+//            if (this.getEntityWorld() instanceof ServerWorld serverWorld) {
+//                EnchantmentHelper.onTargetDamaged(serverWorld, entity, damageSource, this.getWeaponStack(), item -> this.kill(serverWorld));
+//            }
+//
+//            if (entity instanceof LivingEntity livingEntity) {
+//                this.knockback(livingEntity, damageSource);
+//                this.onHit(livingEntity);
+//            }
+//        }
+//
+//        this.deflect(ProjectileDeflection.SIMPLE, entity, this.owner, false);
+//        this.setVelocity(this.getVelocity().multiply(0.02, 0.2, 0.02));
+//        this.playSound(SoundEvents.ITEM_TRIDENT_HIT, 1.0F, 1.0F);
     }
 
     @Override

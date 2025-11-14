@@ -140,13 +140,14 @@ public class SpearItemClass extends Item implements ProjectileItem {
 
     @Override
     public boolean onStoppedUsing(ItemStack stack, World world, LivingEntity user, int remainingUseTicks) {
+        user.addVelocity(user.getRotationVector().normalize().multiply(-2));
         Missile.LOGGER.info("STOP");
         if (world instanceof ServerWorld serverWorld) {
             ItemStack itemStack = stack.splitUnlessCreative(1, user);
             Random r = Random.create();
-            for (int i=0;i<3000;i++){
+            for (int i=0;i<1;i++){
 
-                TridentEntity tridentEntity = ProjectileEntity.spawnWithVelocity(TridentEntity::new, serverWorld, itemStack, user,r.nextFloat() , 2.5F, 100F);
+                SpearEntity SpearEntity = ProjectileEntity.spawnWithVelocity(SpearEntity::new, serverWorld, itemStack, user,r.nextFloat() , 5F, 10f);
             }
 
         }

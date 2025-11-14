@@ -13,6 +13,7 @@ import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.entity.projectile.ProjectileUtil;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.RegistryByteBuf;
@@ -107,32 +108,30 @@ public record KWC(
         return this.delayTicks + (Integer)this.damageConditions.map(net.minecraft.component.type.KineticWeaponComponent.Condition::maxDurationTicks).orElse(0);
     }
 
-    public void usageTick(ItemStack stack, int remainingUseTicks, LivingEntity user, EquipmentSlot slot) {
-        int i = stack.getMaxUseTime(user) - remainingUseTicks;
-        if (i >= this.delayTicks) {
-            i -= this.delayTicks;
+    public void usageTick(LivingEntity user, EquipmentSlot slot, ProjectileEntity bullet,boolean isHit,EntityHitResult EHT) {
+        //int i = stack.getMaxUseTime(user) - remainingUseTicks;
+        if (true) {
+            //i -= this.delayTicks;
             Vec3d vec3d = user.getRotationVector();
-            double d = vec3d.dotProduct(getAmplifiedMovement(user));
+            double d = vec3d.dotProduct(getAmplifiedMovement(bullet));
             float f = user instanceof PlayerEntity ? 1.0F : 0.2F;
             float g = user instanceof PlayerEntity ? 1.0F : 0.5F;
             double e = user.getAttributeBaseValue(EntityAttributes.ATTACK_DAMAGE);
             boolean bl = false;
 
-            for (EntityHitResult entityHitResult : ProjectileUtil.collectPiercingCollisions(
-                    user, g * this.minReach, g * this.maxReach, this.hitboxMargin, target -> PiercingWeaponComponent.canHit(user, target)
-            )) {
-                Entity entity = entityHitResult.getEntity();
+            if(isHit) {
+                Entity entity = EHT.getEntity();
                 boolean bl2 = user.isInPiercingCooldown(entity, this.contactCooldownTicks);
                 user.startPiercingCooldown(entity);
                 if (!bl2) {
                     double h = vec3d.dotProduct(getAmplifiedMovement(entity));
                     double j = Math.max(0.0, d - h);
-                    boolean bl3 = this.dismountConditions.isPresent() && ((net.minecraft.component.type.KineticWeaponComponent.Condition)this.dismountConditions.get()).isSatisfied(i, d, j, f);
-                    boolean bl4 = this.knockbackConditions.isPresent() && ((net.minecraft.component.type.KineticWeaponComponent.Condition)this.knockbackConditions.get()).isSatisfied(i, d, j, f);
-                    boolean bl5 = this.damageConditions.isPresent() && ((net.minecraft.component.type.KineticWeaponComponent.Condition)this.damageConditions.get()).isSatisfied(i, d, j, f);
-                    if (bl3 || bl4 || bl5) {
+//                    boolean bl3 = this.dismountConditions.isPresent() && ((net.minecraft.component.type.KineticWeaponComponent.Condition)this.dismountConditions.get()).isSatisfied(i, d, j, f);
+//                    boolean bl4 = this.knockbackConditions.isPresent() && ((net.minecraft.component.type.KineticWeaponComponent.Condition)this.knockbackConditions.get()).isSatisfied(i, d, j, f);
+//                    boolean bl5 = this.damageConditions.isPresent() && ((net.minecraft.component.type.KineticWeaponComponent.Condition)this.damageConditions.get()).isSatisfied(i, d, j, f);
+                    if (true) {
                         float k = (float)e + MathHelper.floor(j * this.damageMultiplier);
-                        bl |= user.pierce(slot, entity, k, bl5, bl4, bl3);
+                        bl |= user.pierce(slot, entity, k, true , true, true);
                     }
                 }
             }

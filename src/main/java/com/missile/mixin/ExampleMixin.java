@@ -29,22 +29,22 @@ public class ExampleMixin {
 		}
 
 		KineticWeaponComponent kineticWeaponComponent = self.get(DataComponentTypes.KINETIC_WEAPON);
-		KWC kwc = new KWC(
-				2.0F,
-				4.5F,
-				0.125F,
-				10,
-				(int)(0.5 * 20.0F),
-				KineticWeaponComponent.Condition.ofMinSpeed((int)(1 * 20.0F), 1),
-				KineticWeaponComponent.Condition.ofMinSpeed((int)(1 * 20.0F), 1),
-				KineticWeaponComponent.Condition.ofMinRelativeSpeed((int)(1 * 20.0F), 1),
-				0.38F,
-				1,
-				Optional.of(true ? SoundEvents.ITEM_SPEAR_WOOD_USE : SoundEvents.ITEM_SPEAR_USE),
-				Optional.of(true ? SoundEvents.ITEM_SPEAR_WOOD_HIT : SoundEvents.ITEM_SPEAR_HIT)
-		);
+//		KWC kwc = new KWC(
+//				2.0F,
+//				4.5F,
+//				0.125F,
+//				10,
+//				(int)(0.5 * 20.0F),
+//				KineticWeaponComponent.Condition.ofMinSpeed((int)(1 * 20.0F), 1),
+//				KineticWeaponComponent.Condition.ofMinSpeed((int)(1 * 20.0F), 1),
+//				KineticWeaponComponent.Condition.ofMinRelativeSpeed((int)(1 * 20.0F), 1),
+//				0.38F,
+//				1,
+//				Optional.of(true ? SoundEvents.ITEM_SPEAR_WOOD_USE : SoundEvents.ITEM_SPEAR_USE),
+//				Optional.of(true ? SoundEvents.ITEM_SPEAR_WOOD_HIT : SoundEvents.ITEM_SPEAR_HIT)
+//		);
 		if (kineticWeaponComponent != null && !world.isClient()) {
-			kwc.usageTick(self, remainingUseTicks, user, user.getActiveHand().getEquipmentSlot());
+			kineticWeaponComponent.usageTick(self, remainingUseTicks, user, user.getActiveHand().getEquipmentSlot());
 		} else {
 			self.getItem().usageTick(world, user, self, remainingUseTicks);
 		}
